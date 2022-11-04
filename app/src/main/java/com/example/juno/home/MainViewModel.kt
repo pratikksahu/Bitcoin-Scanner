@@ -22,8 +22,32 @@ class MainViewModel(
         _codeETH
 
 
+    private val _valid =
+        MutableLiveData<Boolean?>()
+    val valid: LiveData<Boolean?> =
+        _valid
+
     fun setBTC(str:String?){
         _codeBTC.value = str
+    }
+
+    fun setETH(str:String?){
+        _codeETH.value = str
+    }
+
+    fun validateBTC(){
+        val regex = Regex("^1[1-9a-km-zA-HJ-NP-Z]{25,34}$")
+        val bol:Boolean = codeBTC.value?.let { regex.matches(it) } == true
+        setValid(bol)
+    }
+    fun validateETH(){
+        val regex = Regex("^0x[0-9a-fA-F]+$")
+        val bol:Boolean = codeETH.value?.let { regex.matches(it) } == true
+        setValid(bol)
+    }
+
+    private fun setValid(bol:Boolean?){
+        _valid.value = bol
     }
 }
 

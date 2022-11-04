@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,7 +50,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var btc:Button
     private lateinit var eth:Button
+    private lateinit var share:Button
+    private var crypto:Int = 2
     private lateinit var binding:ActivityMainBinding
+
 
     //QRcode
 
@@ -63,7 +67,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         btc = binding.buttonBtc
         eth = binding.buttonEth
-
+        share = binding.buttonShare
         cameraPermissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         storagePermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -81,17 +85,46 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         btc.setOnClickListener(this)
         eth.setOnClickListener(this)
+        share.setOnClickListener(this)
+
     }
     private fun viewModelSetup(){
         mainViewModel.codeBTC.observe(this) {
             if (it?.isNotEmpty() == true) {
-                binding.textViewResult.text = it
+                mainViewModel.validateBTC()
+
+                binding.textViewValid.visibility = View.VISIBLE
+                binding.textViewResult.visibility = View.VISIBLE
+                binding.buttonShare.visibility = View.VISIBLE
+
+                binding.textViewResult.setText(it)
+            }
+        }
+
+        mainViewModel.codeETH.observe(this){
+            if (it?.isNotEmpty() == true) {
+                mainViewModel.validateETH()
+
+                binding.textViewValid.visibility = View.VISIBLE
+                binding.textViewResult.visibility = View.VISIBLE
+                binding.buttonShare.visibility = View.VISIBLE
+
+                binding.textViewResult.setText(it)
+            }
+        }
+
+        mainViewModel.valid.observe(this){
+            if(it == true){
+                binding.textViewValid.text = "Valid"
+            }else{
+                binding.textViewValid.text = "Invalid"
             }
         }
     }
-    private fun pickImageGallery(){
+    private fun pickImageGallery(cry: Int){
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
+        crypto = cry
         galleryActivityResultLauncher.launch(intent)
     }
 
@@ -127,6 +160,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     ){result ->
         if(result.resultCode == Activity.RESULT_OK){
             val data = result.data
+            imageURI = data?.data
+            if(imageURI != null){
+                detectResultFromImage()
+            }
         }else{
             showToast("Cancelled...")
         }
@@ -213,30 +250,58 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun extractQRcodeInfo(barcodes : List<Barcode>){
         barcodes.forEach{
             val rawValue = it.rawValue
-            binding.textViewResult.text = rawValue
-            mainViewModel.setBTC(rawValue)
+            when(crypto){
+                1 -> {
+                    mainViewModel.setBTC(rawValue)
+                }
+                2 -> {
+                    mainViewModel.setETH(rawValue)
+                }
+            }
+
         }
     }
 
     override fun onClick(v: View?) {
         when(v){
             btc ->{
+                reset()
                 if(checkCameraPermission()){
-                    pickImageCamera()
+                    pickImageGallery(1)
                 }else{
                     requestCameraPermission()
                 }
             }
             eth ->{
+                reset()
                 if(checkCameraPermission()){
-                    pickImageGallery()
+                    pickImageGallery(2)
                 }else{
-                    requestCameraPermission()
+                    requestStoragePermission()
+                }
+            }
+            share ->{
+                if(binding.textViewValid.text == "Invalid")
+                    binding.textViewResult.startAnimation(AnimationUtils.loadAnimation(this,R.anim.shake))
+                else{
+                    val shareIntent = Intent()
+                    shareIntent.action = Intent.ACTION_SEND
+                    shareIntent.type="text/plain"
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, mainViewModel.codeBTC.value);
+                    startActivity(Intent.createChooser(shareIntent,"Share with:"))
                 }
             }
         }
     }
-
+    private fun reset(){
+        crypto = 0
+        mainViewModel.setBTC("")
+        mainViewModel.setETH("")
+        binding.textViewResult.setText("")
+        binding.buttonShare.visibility = View.GONE
+        binding.textViewResult.visibility = View.GONE
+        binding.textViewValid.visibility = View.GONE
+    }
     private fun showToast(message: String){
         Toast.makeText(this,message,Toast.LENGTH_LONG).show()
     }
