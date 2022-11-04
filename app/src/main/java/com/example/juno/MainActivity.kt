@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -22,8 +23,15 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
+    @Inject
+    internal lateinit var mainViewModelFactory: MainViewModelFactory
+
+    private val mainViewModel: MainViewModel by viewModels{
+        GenericSavedStateViewModelFactory(mainViewModelFactory,this)
+    }
 
     companion object{
         private val CAMERA_REQUEST_CODE = 100
@@ -55,10 +63,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         cameraPermissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         storagePermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-        setup()
+        buttonsSetup()
+//        viewModelSetup()
     }
 
-    fun setup(){
+
+
+    private fun buttonsSetup(){
         barcodeOptions = BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
             .build()
@@ -67,7 +78,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btc.setOnClickListener(this)
         eth.setOnClickListener(this)
     }
-
+    private fun viewModelSetup(){
+        mainViewModel.codeBTC.observe(this) {
+            if (it?.isNotEmpty() == true) {
+                binding.textViewResult.text = it
+            }
+        }
+    }
     private fun pickImageGallery(){
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -193,7 +210,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         barcodes.forEach{
             val rawValue = it.rawValue
             binding.textViewResult.text = rawValue
-
+            mainViewModel.setBTC(rawValue)
         }
     }
 
