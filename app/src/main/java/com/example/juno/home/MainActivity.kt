@@ -238,6 +238,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val inputImage = InputImage.fromFilePath(this,imageURI!!)
             val barcodeResult = barcodeScanner!!.process(inputImage)
                 .addOnSuccessListener {barcodes ->
+                    if(barcodes.size == 0)
+                        showToast("No QR code found. \n Please try again.")
+                    else
                     extractQRcodeInfo(barcodes)
                 }
                 .addOnFailureListener{
@@ -248,6 +251,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
     private fun extractQRcodeInfo(barcodes : List<Barcode>){
+
         barcodes.forEach{
             val rawValue = it.rawValue
             when(crypto){
@@ -287,7 +291,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val shareIntent = Intent()
                     shareIntent.action = Intent.ACTION_SEND
                     shareIntent.type="text/plain"
-                    shareIntent.putExtra(Intent.EXTRA_TEXT, mainViewModel.codeBTC.value);
+                    when(crypto){
+                        1 -> {
+                            shareIntent.putExtra(Intent.EXTRA_TEXT, mainViewModel.codeBTC.value)
+                        }
+                        2 -> {
+                            shareIntent.putExtra(Intent.EXTRA_TEXT, mainViewModel.codeETH.value)
+                        }
+                    }
                     startActivity(Intent.createChooser(shareIntent,"Share with:"))
                 }
             }
