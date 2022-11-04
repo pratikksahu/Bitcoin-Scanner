@@ -1,4 +1,4 @@
-package com.example.juno
+package com.example.juno.viewModelFactory
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

@@ -1,4 +1,4 @@
-package com.example.juno
+package com.example.juno.home
 
 import android.Manifest
 import android.app.Activity
@@ -17,14 +17,18 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.example.juno.R
 import com.example.juno.databinding.ActivityMainBinding
+import com.example.juno.viewModelFactory.GenericSavedStateViewModelFactory
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     @Inject
     internal lateinit var mainViewModelFactory: MainViewModelFactory
@@ -64,7 +68,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         storagePermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         buttonsSetup()
-//        viewModelSetup()
+        viewModelSetup()
     }
 
 

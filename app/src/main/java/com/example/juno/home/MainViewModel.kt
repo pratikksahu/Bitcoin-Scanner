@@ -1,9 +1,10 @@
-package com.example.juno
+package com.example.juno.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.example.juno.viewModelFactory.ViewModelAssistedFactory
 import javax.inject.Inject
 
 class MainViewModel(
