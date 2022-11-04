@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -116,15 +118,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         mainViewModel.valid.observe(this){
             if(it == true){
                 binding.textViewValid.text = "Valid"
+                binding.textViewValid.setTextColor(Color.GREEN)
             }else{
                 binding.textViewValid.text = "Invalid"
+                binding.textViewValid.setTextColor(Color.RED)
             }
         }
     }
-    private fun pickImageGallery(cry: Int){
+    private fun pickImageGallery(){
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
-        crypto = cry
         galleryActivityResultLauncher.launch(intent)
     }
 
@@ -224,7 +227,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val storageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
 
                     if (storageAccepted) {
-                        pickImageCamera()
+                        pickImageGallery()
                     } else {
                     showToast("Camera & Storage permission required")
                     }
@@ -270,16 +273,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         when(v){
             btc ->{
                 reset()
-                if(checkCameraPermission()){
-                    pickImageGallery(1)
+                crypto = 1
+                if(checkStoragePermission()){
+                    pickImageGallery()
                 }else{
-                    requestCameraPermission()
+                    requestStoragePermission()
                 }
             }
             eth ->{
                 reset()
-                if(checkCameraPermission()){
-                    pickImageGallery(2)
+                crypto = 2
+                if(checkStoragePermission()){
+                    pickImageGallery()
                 }else{
                     requestStoragePermission()
                 }
