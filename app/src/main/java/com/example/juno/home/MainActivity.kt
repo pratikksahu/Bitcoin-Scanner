@@ -76,6 +76,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btc = binding.buttonBtc
         eth = binding.buttonEth
         share = binding.buttonShare
+
+        //Creating permission lists
         cameraPermissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         storagePermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -83,6 +85,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         viewModelSetup()
     }
 
+    //Function to prompt dialog box
     private fun dialogBox(){
         val dialogBinding = layoutInflater.inflate(R.layout.fragment_dialog,null)
         val myDialog = Dialog(this)
@@ -116,6 +119,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         share.setOnClickListener(this)
 
     }
+
+    //Observe live data in view model
     private fun viewModelSetup(){
         mainViewModel.codeBTC.observe(this) {
             if (it?.isNotEmpty() == true) {
@@ -151,6 +156,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+    //Intent if gallery is chosen
     private fun pickImageGallery(){
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -172,6 +178,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     }
 
+    //Intent if camera is chosen
     private fun pickImageCamera(){
         val contentValues = ContentValues()
 
@@ -196,6 +203,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    //Function to check storage permissions
     private fun checkStoragePermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             this,
@@ -203,10 +211,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         ) ==
                 PackageManager.PERMISSION_GRANTED)
     }
+    //Function to request storage permissions
     private fun requestStoragePermission(){
         ActivityCompat.requestPermissions(this,storagePermissions, STORAGE_REQUEST_CODE)
     }
 
+    //Function to check camera permissions
     private fun checkCameraPermission(): Boolean {
 
         return (ContextCompat.checkSelfPermission(
@@ -221,11 +231,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 ) ==
                         PackageManager.PERMISSION_GRANTED)
     }
-
+    //Function to request storage permissions
     private fun requestCameraPermission(){
         ActivityCompat.requestPermissions(this,cameraPermissions, CAMERA_REQUEST_CODE)
     }
 
+    //Handler for permissions result
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -260,6 +271,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    //Function to extract QR code from the image
     private fun detectResultFromImage(){
         try{
             val inputImage = InputImage.fromFilePath(this,imageURI!!)
@@ -277,6 +289,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     showToast("Failed scanning due to ${e.message}")
         }
     }
+
     private fun extractQRcodeInfo(barcodes : List<Barcode>){
 
         barcodes.forEach{
@@ -323,6 +336,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+
     private fun openCameraOrGallery(type:Int){
         when(type){
             TYPE_CAMERA -> {
