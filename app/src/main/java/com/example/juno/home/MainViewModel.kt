@@ -6,9 +6,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.juno.viewModelFactory.ViewModelAssistedFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import org.jetbrains.annotations.NotNull
 import javax.inject.Inject
 
+@ActivityRetainedScoped
 class MainViewModel(
     private val handle: SavedStateHandle
 ) : ViewModel() {

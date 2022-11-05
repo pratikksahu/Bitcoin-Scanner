@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.Dialog
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -17,6 +18,7 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
@@ -32,6 +34,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -68,6 +71,23 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var barcodeOptions:BarcodeScannerOptions? = null
     private var barcodeScanner: BarcodeScanner? = null
 
+    //
+    private val getContent = registerForActivityResult(ResultCallback()) {
+            returnedData: String? ->
+        if(returnedData.isNullOrEmpty())
+            reset()
+        else{
+            when(crypto){
+                1 -> {
+                    mainViewModel.setBTC(returnedData)
+                }
+                2 -> {
+                    mainViewModel.setETH(returnedData)
+                }
+            }
+
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -251,7 +271,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED
 
                     if (cameraAccepted && storageAccepted) {
-                        pickImageCamera()
+                        startCameraIntent()
                     } else {
                     showToast("Camera & Storage permission required")
                     }
@@ -341,7 +361,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         when(type){
             TYPE_CAMERA -> {
                 if(checkCameraPermission()){
-                    pickImageCamera()
+                    startCameraIntent()
+//                    pickImageCamera()
                 }else{
                     requestCameraPermission()
                 }
@@ -356,6 +377,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private fun startCameraIntent(){
+//        val intent = Intent(this,CameraActivity::class.java)
+        getContent.launch("Camera activity")
+    }
+
     private fun reset(){
         crypto = 0
         mainViewModel.setBTC("")
@@ -368,4 +394,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun showToast(message: String){
         Toast.makeText(this,message,Toast.LENGTH_LONG).show()
     }
+}
+
+class ResultCallback : ActivityResultContract<String, String?>() {
+
+    override fun createIntent(context: Context, input: String): Intent =
+        Intent(context, CameraActivity::class.java).apply {
+            putExtra("item", input)
+        }
+
+
+    override fun parseResult(resultCode: Int, intent: Intent?): String? = when {
+        resultCode != Activity.RESULT_OK -> null
+        else -> intent?.getStringExtra("data")
+    }
+
 }
