@@ -48,44 +48,42 @@
         android:layout_marginTop="44dp"
         android:background="@null"
         android:editable="false"
-        android:minHeight="48dp"
-        android:padding="10dp"
-        android:text="Bitcoin Address"
-        android:visibility="gone"
         android:ellipsize="none"
         android:gravity="center"
         android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="10dp"
+        android:text="Bitcoin Address"
         android:textSize="12sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
-    <TextView
-        android:id="@+id/textView_valid"
+    <Button
+        android:id="@+id/button_share"
+        style="@style/Widget.MyApp.Button.Crypto.Option"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Valid or Invalid"
+        android:text="Share"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tick_cross" />
+
+    <ImageView
+        android:id="@+id/tick_cross"
+        android:layout_width="30sp"
+        android:layout_height="30sp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_tick"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView_result" />
-
-    <Button
-        android:id="@+id/button_share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Share"
-        android:visibility="gone"
-        style="@style/Widget.MyApp.Button.Crypto.Option"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_valid" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

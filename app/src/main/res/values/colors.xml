@@ -12,4 +12,6 @@
     <color name="btc_bg">#E6B31E</color>
     <color name="top_bar">#343434</color>
     <color name="option_bg">#343434</color>
+    <color name="invalid_bg">#FF6464</color>
+    <color name="valid_bg">#B3FFAE</color>
 </resources>

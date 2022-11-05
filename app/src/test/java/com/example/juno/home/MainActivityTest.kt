@@ -36,8 +36,7 @@ class MainActivityTest{
 
     @Test
     fun `mainViewModel_TestValidateETH`(){
-        val ethList = arrayListOf(Pair("0x283700dc09ab48822b1119628d5eb4ee0e68a696e0e578c233df23f035149db7",true)
-            ,Pair("0xc939993c8e3e66d912cec730d34204781a170897a08ef4cdd6ec00fbb20ff289",true)
+        val ethList = arrayListOf(Pair("0x6D31165d5D932D571F3B44695653b46dCC327E84",true)
         ,Pair("16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",false)
         )
         ethList.forEach{

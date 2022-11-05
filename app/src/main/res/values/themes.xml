@@ -29,4 +29,10 @@
     <style name="Widget.MyApp.Button.Crypto.Option" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">@color/option_bg</item>
     </style>
+    <style name="Widget.MyApp.Button.Share.Valid" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/valid_bg</item>
+    </style>
+    <style name="Widget.MyApp.Button.Share.Inalid" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/invalid_bg</item>
+    </style>
 </resources>

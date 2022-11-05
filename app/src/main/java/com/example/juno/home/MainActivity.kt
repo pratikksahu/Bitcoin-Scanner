@@ -7,20 +7,21 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -34,7 +35,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import javax.inject.Singleton
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -58,13 +59,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var storagePermissions: Array<String>
     private var imageURI: Uri? = null
 
-
+    //Buttons
     private lateinit var btc:Button
     private lateinit var eth:Button
     private lateinit var share:Button
     private var crypto:Int = 2
     private lateinit var binding:ActivityMainBinding
 
+    //Valid animatior
+    private var tickCross: ImageView? = null
+    private var tickToCross: AnimatedVectorDrawable? = null
+    private var crossToTick: AnimatedVectorDrawable? = null
+    private var tick = true
 
     //QRcode
 
@@ -102,13 +108,33 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btc = binding.buttonBtc
         eth = binding.buttonEth
         share = binding.buttonShare
-
+        val cryptoLayout = binding.linearLayout
+        cryptoLayout.alpha = 0f
+        cryptoLayout.translationY = 50f
+        cryptoLayout.animate().alpha(1f).translationYBy(-50f).setDuration(1500)
         //Creating permission lists
         cameraPermissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         storagePermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         buttonsSetup()
+        tickSetup()
         viewModelSetup()
+    }
+    fun tickSetup(){
+        tickCross = binding.tickCross
+        tickToCross =
+        getDrawable(
+            R.drawable.avd_tick_to_cross) as AnimatedVectorDrawable
+
+        crossToTick =
+        getDrawable(
+            R.drawable.avd_cross_to_tick) as AnimatedVectorDrawable
+    }
+    fun animate(view: View? , isValid : Boolean) {
+        val drawable = if (isValid) crossToTick!! else tickToCross!!
+        tickCross!!.setImageDrawable(drawable)
+        drawable.start()
+        tick = !tick
     }
 
     //Function to prompt dialog box
@@ -152,7 +178,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             if (it?.isNotEmpty() == true) {
                 mainViewModel.validateBTC()
 
-                binding.textViewValid.visibility = View.VISIBLE
                 binding.textViewResult.visibility = View.VISIBLE
                 binding.buttonShare.visibility = View.VISIBLE
 
@@ -164,7 +189,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             if (it?.isNotEmpty() == true) {
                 mainViewModel.validateETH()
 
-                binding.textViewValid.visibility = View.VISIBLE
                 binding.textViewResult.visibility = View.VISIBLE
                 binding.buttonShare.visibility = View.VISIBLE
 
@@ -174,11 +198,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         mainViewModel.valid.observe(this){
             if(it == true){
-                binding.textViewValid.text = "Valid"
-                binding.textViewValid.setTextColor(Color.GREEN)
+                binding.buttonShare.setBackgroundColor(resources.getColor(R.color.valid_bg))
+                binding.buttonShare.setTextColor(Color.BLACK)
+                binding.tickCross.visibility = View.VISIBLE
+                animate(tickCross,true)
             }else{
-                binding.textViewValid.text = "Invalid"
-                binding.textViewValid.setTextColor(Color.RED)
+                binding.buttonShare.setBackgroundColor(resources.getColor(R.color.invalid_bg))
+                binding.tickCross.visibility = View.VISIBLE
+                animate(tickCross,false)
             }
         }
     }
@@ -343,7 +370,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 dialogBox()
             }
             share ->{
-                if(binding.textViewValid.text == "Invalid")
+                if(mainViewModel.valid.value == false)
                     binding.textViewResult.startAnimation(AnimationUtils.loadAnimation(this,R.anim.shake))
                 else{
                     val shareIntent = Intent()
@@ -395,7 +422,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         binding.textViewResult.setText("")
         binding.buttonShare.visibility = View.GONE
         binding.textViewResult.visibility = View.GONE
-        binding.textViewValid.visibility = View.GONE
     }
     private fun showToast(message: String){
         Toast.makeText(this,message,Toast.LENGTH_LONG).show()
