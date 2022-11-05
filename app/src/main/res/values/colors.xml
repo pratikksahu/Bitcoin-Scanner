@@ -8,5 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="red">#FF0000</color>
-
+    <color name="eth_bg">#343434</color>
+    <color name="btc_bg">#E6B31E</color>
+    <color name="top_bar">#343434</color>
+    <color name="option_bg">#343434</color>
 </resources>

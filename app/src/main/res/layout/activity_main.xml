@@ -31,14 +31,12 @@
 
         <Button
             android:id="@+id/button_btc"
-            android:layout_width="110dp"
-            android:layout_height="100dp"
+            style="@style/Widget.MyApp.Button.Crypto.BTC"
             android:text="BTC" />
 
         <Button
             android:id="@+id/button_eth"
-            android:layout_width="110dp"
-            android:layout_height="100dp"
+            style="@style/Widget.MyApp.Button.Crypto.ETH"
             android:layout_marginStart="70dp"
             android:text="ETH" />
     </LinearLayout>
@@ -49,7 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="44dp"
         android:background="@null"
-        android:editable="false"
+        android:inputType="none"
         android:minHeight="48dp"
         android:padding="10dp"
         android:text="Bitcoin Address"
@@ -82,6 +80,7 @@
         android:layout_marginTop="16dp"
         android:text="Share"
         android:visibility="gone"
+        style="@style/Widget.MyApp.Button.Crypto.Option"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"

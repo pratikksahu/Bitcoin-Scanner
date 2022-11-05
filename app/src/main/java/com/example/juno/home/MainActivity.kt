@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         myDialog.setCancelable(true)
         val buttonC = dialogBinding.findViewById<Button>(R.id.button_camera)
         val buttonG = dialogBinding.findViewById<Button>(R.id.button_gallery)
-
+        myDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         buttonC.setOnClickListener {
             openCameraOrGallery(TYPE_CAMERA)
             myDialog.dismiss()
