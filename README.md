@@ -4,3 +4,4 @@
 
 #Camera X guide [Link](https://developer.android.com/codelabs/camerax-getting-started)
 
+#Tick cross animation [Link](https://www.geeksforgeeks.org/how-to-make-check-tick-and-cross-animations-in-android/)
