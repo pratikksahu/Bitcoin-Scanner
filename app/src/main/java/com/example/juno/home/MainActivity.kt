@@ -1,6 +1,7 @@
 package com.example.juno.home
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.ContentValues
@@ -13,17 +14,24 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.DisplayMetrics
+import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import com.example.juno.R
 import com.example.juno.databinding.ActivityMainBinding
+import com.example.juno.databinding.CameraPreviewBinding
 import com.example.juno.viewModelFactory.GenericSavedStateViewModelFactory
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -31,6 +39,10 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import java.lang.Math.*
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -50,6 +62,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         private val TYPE_BTC = 1
         private val TYPE_ETH  = 2
         private val TAG = "Main"
+
+        private const val RATIO_4_3_VALUE = 4.0 / 3.0
+        private const val RATIO_16_9_VALUE = 16.0 / 9.0
     }
     private lateinit var cameraPermissions: Array<String>
     private lateinit var storagePermissions: Array<String>
@@ -61,12 +76,170 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var share:Button
     private var crypto:Int = 2
     private lateinit var binding:ActivityMainBinding
-
+    private lateinit var cameraBinding: CameraPreviewBinding
 
     //QRcode
 
     private var barcodeOptions:BarcodeScannerOptions? = null
     private var barcodeScanner: BarcodeScanner? = null
+
+    //----------------------------------//----------------------------------//----------------------------------
+    private var previewView: PreviewView? = null
+    lateinit var cameraProvider: ProcessCameraProvider
+    private var cameraSelector: CameraSelector? = null
+    private var lensFacing = CameraSelector.LENS_FACING_BACK
+    private var previewUseCase: Preview? = null
+    private var analysisUseCase: ImageAnalysis? = null
+
+//    private val screenAspectRatio: Int
+//        get() {
+//            // Get screen metrics used to setup camera for full screen resolution
+//            val metrics = DisplayMetrics().also { previewView?.display?.getRealMetrics(it) }
+//            return aspectRatio(metrics.widthPixels, metrics.heightPixels)
+//        }
+
+    private var imageCapture: ImageCapture? = null
+//    private fun startCamera() {
+//        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+//
+//        cameraProviderFuture.addListener({
+//            cameraProvider = cameraProviderFuture.get()
+//            val preview = Preview.Builder()
+//                .build()
+//                .also { mPreview ->
+//
+//                    cameraBinding.viewFinder.surfaceProvider
+//                }
+//                imageCapture = ImageCapture.Builder().build()
+//            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+//
+//            try{
+//                cameraProvider.unbindAll()
+//                cameraProvider.bindToLifecycle(this, cameraSelector!!,preview,imageCapture)
+//            }catch (e: java.lang.Exception){
+//                Log.d(TAG,e.message.toString())
+//            }
+//        },ContextCompat.getMainExecutor(this))
+//    }
+
+   /* private fun bindCameraUseCases() {
+        bindPreviewUseCase()
+        bindAnalyseUseCase()
+    }
+
+    private fun bindPreviewUseCase() {
+        if (cameraProvider == null) {
+            return
+        }
+        if (previewUseCase != null) {
+            cameraProvider!!.unbind(previewUseCase)
+        }
+
+        previewUseCase = Preview.Builder()
+            .setTargetAspectRatio(screenAspectRatio)
+            .setTargetRotation(previewView!!.display.rotation)
+            .build()
+        previewUseCase!!.setSurfaceProvider(previewView!!.surfaceProvider)
+
+        try {
+            cameraProvider!!.bindToLifecycle(
+                /* lifecycleOwner= */this,
+                cameraSelector!!,
+                previewUseCase
+            )
+        } catch (illegalStateException: IllegalStateException) {
+            Log.e(TAG, illegalStateException.message ?: "IllegalStateException")
+        } catch (illegalArgumentException: IllegalArgumentException) {
+            Log.e(TAG, illegalArgumentException.message ?: "IllegalArgumentException")
+        }
+    }
+
+    private fun bindAnalyseUseCase() {
+        // Note that if you know which format of barcode your app is dealing with, detection will be
+        // faster to specify the supported barcode formats one by one, e.g.
+        // BarcodeScannerOptions.Builder()
+        //     .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+        //     .build();
+        val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient()
+
+        if (cameraProvider == null) {
+            return
+        }
+        if (analysisUseCase != null) {
+            cameraProvider!!.unbind(analysisUseCase)
+        }
+
+        analysisUseCase = ImageAnalysis.Builder()
+            .setTargetAspectRatio(screenAspectRatio)
+            .setTargetRotation(previewView!!.display.rotation)
+            .build()
+
+        // Initialize our background executor
+        val cameraExecutor = Executors.newSingleThreadExecutor()
+
+        analysisUseCase?.setAnalyzer(
+            cameraExecutor,
+            ImageAnalysis.Analyzer { imageProxy ->
+                processImageProxy(barcodeScanner, imageProxy)
+            }
+        )
+
+        try {
+            cameraProvider!!.bindToLifecycle(
+                /* lifecycleOwner= */this,
+                cameraSelector!!,
+                analysisUseCase
+            )
+        } catch (illegalStateException: IllegalStateException) {
+            Log.e(TAG, illegalStateException.message ?: "IllegalStateException")
+        } catch (illegalArgumentException: IllegalArgumentException) {
+            Log.e(TAG, illegalArgumentException.message ?: "IllegalArgumentException")
+        }
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private fun processImageProxy(
+        barcodeScanner: BarcodeScanner,
+        imageProxy: ImageProxy
+    ) {
+        val inputImage =
+            InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
+
+        barcodeScanner.process(inputImage)
+            .addOnSuccessListener { barcodes ->
+                barcodes.forEach {
+                    it.rawValue?.let { it1 -> Log.d(TAG, it1) }
+                }
+            }
+            .addOnFailureListener {
+                Log.e(TAG, it.message ?: it.toString())
+            }.addOnCompleteListener {
+                // When the image is from CameraX analysis use case, must call image.close() on received
+                // images when finished using them. Otherwise, new images may not be received or the camera
+                // may stall.
+                imageProxy.close()
+            }
+    }
+
+    /**
+     *  [androidx.camera.core.ImageAnalysis], [androidx.camera.core.Preview] requires enum value of
+     *  [androidx.camera.core.AspectRatio]. Currently it has values of 4:3 & 16:9.
+     *
+     *  Detecting the most suitable ratio for dimensions provided in @params by counting absolute
+     *  of preview ratio to one of the provided values.
+     *
+     *  @param width - preview width
+     *  @param height - preview height
+     *  @return suitable aspect ratio
+     */
+    private fun aspectRatio(width: Int, height: Int): Int {
+        val previewRatio = max(width, height).toDouble() / min(width, height)
+        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
+            return AspectRatio.RATIO_4_3
+        }
+        return AspectRatio.RATIO_16_9
+    }*/
+    //----------------------------------//----------------------------------//----------------------------------
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,7 +283,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun buttonsSetup(){
         barcodeOptions = BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
             .build()
         barcodeScanner = BarcodeScanning.getClient(barcodeOptions!!)
 
@@ -271,6 +444,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+
     //Function to extract QR code from the image
     private fun detectResultFromImage(){
         try{
@@ -281,6 +455,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         showToast("No QR code found. \n Please try again.")
                     else
                     extractQRcodeInfo(barcodes)
+                }
+                .addOnCompleteListener {
                 }
                 .addOnFailureListener{
                     showToast("Failed scanning due to ${it.message}")
@@ -310,7 +486,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         when(v){
             btc ->{
                 crypto = TYPE_BTC
-                dialogBox()
+//                dialogBox()
+                val intent = Intent(this , CameraPreviewActivity::class.java)
+                startActivity(intent)
             }
             eth ->{
                 crypto = TYPE_ETH
