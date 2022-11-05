@@ -2,3 +2,5 @@
 
 #Google ML Barcode kit [Link](https://developers.google.com/ml-kit/vision/barcode-scanning/android)
 
+#Camera X guide [Link](https://developer.android.com/codelabs/camerax-getting-started)
+
