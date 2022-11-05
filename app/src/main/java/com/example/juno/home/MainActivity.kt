@@ -188,8 +188,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         ActivityResultContracts.StartActivityForResult()
     ){result ->
         if(result.resultCode == Activity.RESULT_OK){
-            val data = result.data
-            imageURI = data?.data
             if(imageURI != null){
                 detectResultFromImage()
             }
