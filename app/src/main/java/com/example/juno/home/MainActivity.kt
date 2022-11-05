@@ -2,6 +2,7 @@ package com.example.juno.home
 
 import android.Manifest
 import android.app.Activity
+import android.app.Dialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -43,6 +44,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     companion object{
         private val CAMERA_REQUEST_CODE = 100
         private val STORAGE_REQUEST_CODE = 101
+        private val TYPE_CAMERA = 1
+        private val TYPE_GALLERY  = 2
+        private val TYPE_BTC = 1
+        private val TYPE_ETH  = 2
         private val TAG = "Main"
     }
     private lateinit var cameraPermissions: Array<String>
@@ -77,7 +82,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         viewModelSetup()
     }
 
+    private fun dialogBox(){
+        val dialogBinding = layoutInflater.inflate(R.layout.fragment_dialog,null)
+        val myDialog = Dialog(this)
+        myDialog.setContentView(dialogBinding)
 
+        myDialog.setCancelable(true)
+        val buttonC = dialogBinding.findViewById<Button>(R.id.button_camera)
+        val buttonG = dialogBinding.findViewById<Button>(R.id.button_gallery)
+
+        buttonC.setOnClickListener {
+            openCameraOrGallery(TYPE_CAMERA)
+            myDialog.dismiss()
+        }
+
+        buttonG.setOnClickListener {
+            openCameraOrGallery(TYPE_GALLERY)
+            myDialog.dismiss()
+        }
+        myDialog.show()
+
+    }
 
     private fun buttonsSetup(){
         barcodeOptions = BarcodeScannerOptions.Builder()
@@ -272,22 +297,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
         when(v){
             btc ->{
-                reset()
-                crypto = 1
-                if(checkStoragePermission()){
-                    pickImageGallery()
-                }else{
-                    requestStoragePermission()
-                }
+                crypto = TYPE_BTC
+                dialogBox()
             }
             eth ->{
-                reset()
-                crypto = 2
-                if(checkStoragePermission()){
-                    pickImageGallery()
-                }else{
-                    requestStoragePermission()
-                }
+                crypto = TYPE_ETH
+                dialogBox()
             }
             share ->{
                 if(binding.textViewValid.text == "Invalid")
@@ -309,6 +324,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+    private fun openCameraOrGallery(type:Int){
+        when(type){
+            TYPE_CAMERA -> {
+                if(checkCameraPermission()){
+                    pickImageCamera()
+                }else{
+                    requestCameraPermission()
+                }
+            }
+            TYPE_GALLERY -> {
+                if(checkStoragePermission()){
+                    pickImageGallery()
+                }else{
+                    requestStoragePermission()
+                }
+            }
+        }
+    }
+
     private fun reset(){
         crypto = 0
         mainViewModel.setBTC("")
