@@ -223,6 +223,10 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
                 finish()
             }
             button_back ->{
+                val returnedValue = Intent().apply {
+                    putExtra("data", "Goback")
+                }
+                setResult(Activity.RESULT_OK, returnedValue)
                 finish()
             }
         }

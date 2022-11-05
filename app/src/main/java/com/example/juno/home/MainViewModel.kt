@@ -1,5 +1,6 @@
 package com.example.juno.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -14,6 +15,8 @@ import javax.inject.Inject
 class MainViewModel(
     private val handle: SavedStateHandle
 ) : ViewModel() {
+    private val regexBTC = Regex("^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$")
+    private val regexETH = Regex("^(0x)?[0-9A-Fa-f]{40}$")
 
     private val _codeBTC =
         MutableLiveData<String?>()
@@ -40,13 +43,11 @@ class MainViewModel(
     }
 
     fun validateBTC(){
-        val regex = Regex("^1[1-9a-km-zA-HJ-NP-Z]{25,34}$")
-        val bol:Boolean = codeBTC.value?.let { regex.matches(it) } == true
+        val bol:Boolean = codeBTC.value?.let { regexBTC.matches(it) } == true
         setValid(bol)
     }
     fun validateETH(){
-        val regex = Regex("^0x[0-9a-fA-F]+$")
-        val bol:Boolean = codeETH.value?.let { regex.matches(it) } == true
+        val bol:Boolean = codeETH.value?.let { regexETH.matches(it) } == true
         setValid(bol)
     }
 

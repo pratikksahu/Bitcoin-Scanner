@@ -24,7 +24,8 @@ class MainActivityTest{
     @Test
     fun `mainViewModel_TestValidateBTC`(){
         val btcList = arrayListOf(Pair("16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",true)
-            ,Pair("3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r",false)
+            ,Pair("3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r",true)
+            , Pair("6D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r",false)
         )
         btcList.forEach{
             mainViewModel.setBTC(it.first)

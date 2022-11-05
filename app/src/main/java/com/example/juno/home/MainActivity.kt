@@ -74,8 +74,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     //
     private val getContent = registerForActivityResult(ResultCallback()) {
             returnedData: String? ->
+
         if(returnedData.isNullOrEmpty()){
             showToast("No QR code found. \n Please try again.")
+            reset()
+        }
+        else if(returnedData == "Goback"){
             reset()
         }
         else{
