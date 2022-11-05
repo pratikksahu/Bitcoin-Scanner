@@ -14,5 +14,6 @@
 ### CameraX to design custom QR code screen
 ### Google ML kit barcode scanner to process the QR code
 ### Hilt for DI
+### JUnit 4 for unit test cases
 
 
