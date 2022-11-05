@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.example.juno.home.cutomView.BarcodeBoxView
@@ -17,7 +18,9 @@ class QrCodeAnalyzer(
     private val previewViewWidth: Float,
     private val previewViewHeight: Float
 ) : ImageAnalysis.Analyzer {
-
+companion object{
+    val TAG = "CAMERA_ACTIVITY"
+}
     /**
      * This parameters will handle preview box scaling
      */
@@ -54,23 +57,33 @@ class QrCodeAnalyzer(
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.isNotEmpty()) {
                             // Update bounding rect
-                            barcodes[0].boundingBox?.let { rect ->
+                        barcodes.forEach {barcode ->
+                            barcode.boundingBox?.let { rect ->
                                 barcodeBoxView.setRect(
                                     adjustBoundingRect(
                                         rect
                                     )
                                 )
                             }
+                        }
                         btc_eth_value = barcodes[0].rawValue.toString()
                     } else {
                         // Remove bounding rect
                         barcodeBoxView.setRect(RectF())
                     }
                 }
-                .addOnFailureListener { }
+                .addOnFailureListener {
+                    Log.e(TAG, it.message.orEmpty())
+                }
+                .addOnCompleteListener {
+                    // When the image is from CameraX analysis use case, must
+                    // call image.close() on received images when finished
+                    // using them. Otherwise, new images may not be received
+                    // or the camera may stall.
+                    image.image?.close()
+                    image.close()
+                }
         }
-
-        image.close()
     }
 
 }
