@@ -1,6 +1,7 @@
 package com.example.juno.home
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
@@ -11,7 +12,9 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.provider.MediaStore
 import android.util.Log
+import android.util.Size
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -20,6 +23,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.juno.databinding.ActivityCameraBinding
+import com.example.juno.home.cutomView.BarcodeBoxView
 import com.example.juno.viewModelFactory.GenericSavedStateViewModelFactory
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -51,7 +55,11 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
     private lateinit var button_capture:Button
     private lateinit var button_back:Button
     private lateinit var cameraExecutor:ExecutorService
+    private lateinit var barcodeBoxView: BarcodeBoxView
+    private lateinit var qrCodeAnalyzer: QrCodeAnalyzer
+
     private var btc_eth_code: String = ""
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +70,8 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
         button_back.setOnClickListener(this)
         button_capture.setOnClickListener(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
+        barcodeBoxView = BarcodeBoxView(this)
+        addContentView(barcodeBoxView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
         startCamera()
     }
@@ -87,15 +97,22 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
             val scanner = BarcodeScanning.getClient(options)
 
             // setting up the analysis use case
-            val analysisUseCase = ImageAnalysis.Builder().build()
+            val analysisUseCase = ImageAnalysis.Builder()
+                .build()
 
             // define the actual functionality of our analysis use case
-            analysisUseCase.setAnalyzer(
-                // newSingleThreadExecutor() will let us perform analysis on a single worker thread
-                Executors.newSingleThreadExecutor()
-            ) { imageProxy ->
-                processImageProxy(scanner, imageProxy)
-            }
+//            analysisUseCase.setAnalyzer(
+//                // newSingleThreadExecutor() will let us perform analysis on a single worker thread
+//                Executors.newSingleThreadExecutor()
+//            ) { imageProxy ->
+//                processImageProxy(scanner, imageProxy)
+//            }
+            qrCodeAnalyzer = QrCodeAnalyzer(this,
+                barcodeBoxView
+                ,binding.viewFinder.width.toFloat()
+                ,binding.viewFinder.height.toFloat()
+            )
+            analysisUseCase.setAnalyzer(cameraExecutor,qrCodeAnalyzer)
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -200,7 +217,7 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
             button_capture -> {
                 takePhoto()
                 val returnedValue = Intent().apply {
-                    putExtra("data", btc_eth_code)
+                    putExtra("data", qrCodeAnalyzer.btc_eth_value)
                 }
                 setResult(Activity.RESULT_OK, returnedValue)
                 finish()
