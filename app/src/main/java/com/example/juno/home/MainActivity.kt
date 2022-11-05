@@ -2,6 +2,7 @@ package com.example.juno.home
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -274,11 +275,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             btc ->{
                 reset()
                 crypto = 1
-                if(checkStoragePermission()){
-                    pickImageGallery()
-                }else{
-                    requestStoragePermission()
-                }
+                alertBuilder()
+//                if(checkStoragePermission()){
+//                    pickImageGallery()
+//                }else{
+//                    requestStoragePermission()
+//                }
             }
             eth ->{
                 reset()
@@ -317,6 +319,31 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         binding.buttonShare.visibility = View.GONE
         binding.textViewResult.visibility = View.GONE
         binding.textViewValid.visibility = View.GONE
+    }
+    private fun alertBuilder(){
+        val mAlert = AlertDialog.Builder(this@MainActivity)
+//        mAlert.setPositiveButton("Camera") { dialog, id ->
+//            if(checkCameraPermission()){
+//                pickImageCamera()
+//            }else{
+//                requestCameraPermission()
+//            }
+//        }
+        mAlert.setPositiveButton("Gallery") { dialog, id ->
+            if(checkStoragePermission()){
+                pickImageGallery()
+            }else{
+                requestStoragePermission()
+            }
+        }
+        mAlert.setNegativeButton("Camera"){ dialog, id ->
+            if(checkCameraPermission()){
+                pickImageCamera()
+            }else{
+                requestCameraPermission()
+            }
+        }
+        mAlert.show()
     }
     private fun showToast(message: String){
         Toast.makeText(this,message,Toast.LENGTH_LONG).show()
