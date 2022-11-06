@@ -17,6 +17,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -60,6 +62,17 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
 
     private var btc_eth_code: String = ""
 
+    val callback: OnBackPressedCallback =
+        object : OnBackPressedCallback(true)
+        {
+            override fun handleOnBackPressed() {
+                val returnedValue = Intent().apply {
+                    putExtra("data", "Goback")
+                }
+                setResult(Activity.RESULT_OK, returnedValue)
+                finish()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +85,7 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
         cameraExecutor = Executors.newSingleThreadExecutor()
         barcodeBoxView = BarcodeBoxView(this)
         addContentView(barcodeBoxView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-
+        this.onBackPressedDispatcher.addCallback(callback)
         startCamera()
     }
     private fun startCamera() {
@@ -210,6 +223,7 @@ class CameraActivity:AppCompatActivity(), View.OnClickListener {
                 }
         }
     }
+
 
     override fun onClick(v: View?) {
 
